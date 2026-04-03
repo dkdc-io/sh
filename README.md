@@ -1,6 +1,11 @@
-# sh
+# dkdc-sh
 
-Shell utilities for tmux, git, and command management.
+[![crates.io](https://img.shields.io/crates/v/dkdc-sh?color=blue)](https://crates.io/crates/dkdc-sh)
+[![PyPI](https://img.shields.io/pypi/v/dkdc-sh?color=blue)](https://pypi.org/project/dkdc-sh/)
+[![CI](https://img.shields.io/github/actions/workflow/status/dkdc-io/sh/ci.yml?branch=main&label=CI)](https://github.com/dkdc-io/sh/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-8A2BE2.svg)](https://github.com/dkdc-io/sh/blob/main/LICENSE)
+
+Shell library.
 
 ## Install
 
