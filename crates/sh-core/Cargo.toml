@@ -2,7 +2,7 @@
 name = "dkdc-sh"
 version = "0.1.0"
 edition = "2024"
-authors = ["Cody <cody@dkdc.dev>"]
+authors = ["Cody <cody@dkdc.io>"]
 description = "Shell utilities for tmux, git, and command management"
 repository = "https://github.com/dkdc-io/sh"
 license = "MIT"
