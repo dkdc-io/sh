@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+echo "Publishing dkdc-sh to crates.io..."
+cargo publish -p dkdc-sh
+
+echo "Published!"
