@@ -1,0 +1,16 @@
+[package]
+name = "dkdc-sh"
+version = "0.1.0"
+edition = "2024"
+authors = ["Cody <cody@dkdc.dev>"]
+description = "Shell utilities for tmux, git, and command management"
+repository = "https://github.com/dkdc-io/sh"
+license = "MIT"
+readme = "README.md"
+
+[lib]
+name = "dkdc_sh"
+path = "src/lib.rs"
+
+[dependencies]
+which = "7"
