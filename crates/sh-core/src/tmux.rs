@@ -134,3 +134,82 @@ pub fn capture_pane(name: &str, lines: Option<usize>) -> Result<String, Error> {
 
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicU32, Ordering};
+
+    static COUNTER: AtomicU32 = AtomicU32::new(0);
+
+    fn unique_session() -> String {
+        let id = COUNTER.fetch_add(1, Ordering::SeqCst);
+        format!("dkdc_sh_test_{id}")
+    }
+
+    #[test]
+    fn test_has_session_nonexistent() {
+        assert!(!has_session("dkdc_sh_nonexistent_99999"));
+    }
+
+    #[test]
+    fn test_new_kill_session() {
+        let name = unique_session();
+
+        new_session(&name, "echo hello").unwrap();
+        assert!(has_session(&name));
+
+        kill_session(&name).unwrap();
+        assert!(!has_session(&name));
+    }
+
+    #[test]
+    fn test_new_session_duplicate() {
+        let name = unique_session();
+
+        new_session(&name, "echo hello").unwrap();
+        let result = new_session(&name, "echo again");
+        assert!(result.is_err());
+
+        let _ = kill_session(&name);
+    }
+
+    #[test]
+    fn test_kill_session_idempotent() {
+        kill_session("dkdc_sh_nonexistent_99999").unwrap();
+    }
+
+    #[test]
+    fn test_send_keys_nonexistent() {
+        let result = send_keys("dkdc_sh_nonexistent_99999", "echo hi");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_capture_pane_nonexistent() {
+        let result = capture_pane("dkdc_sh_nonexistent_99999", None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_attach_nonexistent() {
+        let result = attach("dkdc_sh_nonexistent_99999");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_send_keys_and_capture() {
+        let name = unique_session();
+
+        new_session(&name, "echo started").unwrap();
+
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        let output = capture_pane(&name, Some(50)).unwrap();
+        assert!(!output.is_empty());
+
+        let output_all = capture_pane(&name, None).unwrap();
+        assert!(!output_all.is_empty());
+
+        let _ = kill_session(&name);
+    }
+}

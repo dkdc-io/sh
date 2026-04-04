@@ -54,6 +54,15 @@ def git_clone_shallow(url: str, dest: str, branch: str) -> None:
     """Shallow-clone a repo (single branch, depth 1)."""
     ...
 
+def git_clone_shallow_with_env(
+    url: str,
+    dest: str,
+    branch: str,
+    env: list[tuple[str, str]] | None = None,
+) -> None:
+    """Shallow-clone a repo with extra environment variables."""
+    ...
+
 def git_clone_local(source: str, dest: str, branch: str) -> None:
     """Clone from a local repo directory (fast, shares objects via hardlinks)."""
     ...

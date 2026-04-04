@@ -12,4 +12,7 @@ uv run maturin develop
 echo "Running ty..."
 uv run ty check
 
+echo "Running Python tests..."
+uv run pytest
+
 echo "Python checks passed!"
