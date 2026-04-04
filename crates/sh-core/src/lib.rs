@@ -120,7 +120,29 @@ mod tests {
     }
 
     #[test]
-    fn test_has_session_nonexistent() {
-        assert!(!tmux::has_session("dkdc_test_nonexistent_12345"));
+    fn test_run_failed_command() {
+        let result = run("ls", &["/nonexistent_path_12345"]);
+        assert!(matches!(result, Err(Error::CommandFailed { .. })));
+    }
+
+    #[test]
+    fn test_run_with_env() {
+        let output = run_with_env("env", &[], &[("DKDC_SH_TEST_VAR", "hello123")]).unwrap();
+        assert!(output.contains("DKDC_SH_TEST_VAR=hello123"));
+    }
+
+    #[test]
+    fn test_error_display() {
+        let err = Error::CommandNotFound("foo".to_string());
+        assert_eq!(err.to_string(), "command not found: foo");
+
+        let err = Error::CommandFailed {
+            cmd: "bar".to_string(),
+            detail: "oops".to_string(),
+        };
+        assert!(err.to_string().contains("bar"));
+
+        let err = Error::Tmux("bad".to_string());
+        assert!(err.to_string().contains("bad"));
     }
 }

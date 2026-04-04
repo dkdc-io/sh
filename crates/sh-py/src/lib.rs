@@ -100,6 +100,23 @@ fn git_clone_shallow(url: &str, dest: &str, branch: &str) -> PyResult<()> {
 }
 
 #[pyfunction]
+#[pyo3(signature = (url, dest, branch, env=None))]
+fn git_clone_shallow_with_env(
+    url: &str,
+    dest: &str,
+    branch: &str,
+    env: Option<Vec<(String, String)>>,
+) -> PyResult<()> {
+    let env_pairs = env.unwrap_or_default();
+    let env_ref: Vec<(&str, &str)> = env_pairs
+        .iter()
+        .map(|(k, v)| (k.as_str(), v.as_str()))
+        .collect();
+    dkdc_sh::git::clone_shallow_with_env(url, &PathBuf::from(dest), branch, &env_ref)
+        .map_err(to_py_err)
+}
+
+#[pyfunction]
 fn git_clone_local(source: &str, dest: &str, branch: &str) -> PyResult<()> {
     dkdc_sh::git::clone_local(&PathBuf::from(source), &PathBuf::from(dest), branch)
         .map_err(to_py_err)
@@ -138,6 +155,7 @@ mod core {
         m.add_function(wrap_pyfunction!(git_cmd, m)?)?;
         m.add_function(wrap_pyfunction!(git_cmd_with_env, m)?)?;
         m.add_function(wrap_pyfunction!(git_clone_shallow, m)?)?;
+        m.add_function(wrap_pyfunction!(git_clone_shallow_with_env, m)?)?;
         m.add_function(wrap_pyfunction!(git_clone_local, m)?)?;
         m.add_function(wrap_pyfunction!(git_checkout_new_branch, m)?)?;
         m.add_function(wrap_pyfunction!(git_config_set, m)?)?;
