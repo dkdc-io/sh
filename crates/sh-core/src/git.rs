@@ -30,14 +30,14 @@ pub fn cmd_with_env(dir: &Path, args: &[&str], env: &[(&str, &str)]) -> Result<S
     let output = command.output()?;
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
         return Err(Error::CommandFailed {
             cmd: format!("git {}", args.first().unwrap_or(&"")),
             detail: stderr,
         });
     }
 
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
 /// Shallow-clone a repo (single branch, depth 1).
@@ -75,7 +75,7 @@ pub fn clone_shallow_with_env(
     let output = command.output()?;
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
         return Err(Error::CommandFailed {
             cmd: "git clone".to_string(),
             detail: stderr,
@@ -101,7 +101,7 @@ pub fn clone_local(source: &Path, dest: &Path, branch: &str) -> Result<(), Error
         .output()?;
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
         return Err(Error::CommandFailed {
             cmd: "git clone (local)".to_string(),
             detail: stderr,

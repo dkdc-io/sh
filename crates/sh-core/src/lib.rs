@@ -71,14 +71,14 @@ pub fn run_with_env(program: &str, args: &[&str], env: &[(&str, &str)]) -> Resul
     let output = command.output()?;
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
         return Err(Error::CommandFailed {
             cmd: format!("{program} {}", args.first().unwrap_or(&"")),
             detail: stderr,
         });
     }
 
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
 #[cfg(test)]
