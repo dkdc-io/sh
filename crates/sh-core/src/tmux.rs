@@ -132,7 +132,7 @@ pub fn capture_pane(name: &str, lines: Option<usize>) -> Result<String, Error> {
         )));
     }
 
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
 #[cfg(test)]
