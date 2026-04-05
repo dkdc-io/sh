@@ -4,8 +4,23 @@ use std::process::{Command, Stdio};
 
 use crate::{Error, require};
 
+/// Validate a tmux session name (alphanumeric, hyphens, underscores only).
+fn validate_session_name(name: &str) -> Result<(), Error> {
+    if name.is_empty()
+        || !name
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
+        return Err(Error::Tmux(format!("invalid session name: {name}")));
+    }
+    Ok(())
+}
+
 /// Check if a tmux session exists.
 pub fn has_session(name: &str) -> bool {
+    if validate_session_name(name).is_err() {
+        return false;
+    }
     Command::new("tmux")
         .args(["has-session", "-t", name])
         .stdout(Stdio::null())
@@ -20,6 +35,7 @@ pub fn has_session(name: &str) -> bool {
 /// The session is created with `remain-on-exit on` so it persists
 /// even after the command exits.
 pub fn new_session(name: &str, cmd: &str) -> Result<(), Error> {
+    validate_session_name(name)?;
     require("tmux")?;
 
     if has_session(name) {
@@ -51,6 +67,7 @@ pub fn new_session(name: &str, cmd: &str) -> Result<(), Error> {
 
 /// Kill a tmux session. Idempotent — returns Ok if already gone.
 pub fn kill_session(name: &str) -> Result<(), Error> {
+    validate_session_name(name)?;
     require("tmux")?;
 
     if !has_session(name) {
@@ -70,6 +87,7 @@ pub fn kill_session(name: &str) -> Result<(), Error> {
 
 /// Attach to a tmux session (takes over the terminal).
 pub fn attach(name: &str) -> Result<(), Error> {
+    validate_session_name(name)?;
     require("tmux")?;
 
     if !has_session(name) {
@@ -87,6 +105,7 @@ pub fn attach(name: &str) -> Result<(), Error> {
 
 /// Send keys followed by Enter to a tmux session.
 pub fn send_keys(name: &str, keys: &str) -> Result<(), Error> {
+    validate_session_name(name)?;
     require("tmux")?;
 
     if !has_session(name) {
@@ -110,6 +129,7 @@ pub fn send_keys(name: &str, keys: &str) -> Result<(), Error> {
 ///
 /// Returns the last `lines` lines of output, or all visible lines if None.
 pub fn capture_pane(name: &str, lines: Option<usize>) -> Result<String, Error> {
+    validate_session_name(name)?;
     require("tmux")?;
 
     if !has_session(name) {
@@ -145,6 +165,18 @@ mod tests {
     fn unique_session() -> String {
         let id = COUNTER.fetch_add(1, Ordering::SeqCst);
         format!("dkdc_sh_test_{id}")
+    }
+
+    #[test]
+    fn test_validate_session_name() {
+        assert!(validate_session_name("good-name").is_ok());
+        assert!(validate_session_name("good_name").is_ok());
+        assert!(validate_session_name("abc123").is_ok());
+        assert!(validate_session_name("").is_err());
+        assert!(validate_session_name("bad name").is_err());
+        assert!(validate_session_name("bad;name").is_err());
+        assert!(validate_session_name("bad:name").is_err());
+        assert!(validate_session_name("bad.name").is_err());
     }
 
     #[test]
