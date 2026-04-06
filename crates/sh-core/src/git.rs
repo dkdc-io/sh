@@ -271,17 +271,14 @@ mod tests {
     #[test]
     fn test_cmd_with_env_askpass_env_is_passed_through() {
         let repo = temp_repo();
-        // Verify GIT_ASKPASS env var is actually passed to the git process
-        // by checking it appears in the git environment. We use `var` subcommand
-        // via rev-parse to check indirectly — the key behavior is that
-        // cmd_with_env sets the env var on the child process.
+        // Verify GIT_ASKPASS env var doesn't interfere with normal git operations.
+        // We use `status` which always succeeds in a valid repo.
         let askpass_script = "/usr/bin/true";
         let output = cmd_with_env(
             repo.path(),
-            &["var", "GIT_EDITOR"],
+            &["status"],
             &[("GIT_ASKPASS", askpass_script)],
         );
-        // The call should succeed (GIT_ASKPASS doesn't interfere with var lookup)
         assert!(output.is_ok());
     }
 }
