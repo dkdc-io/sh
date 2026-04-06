@@ -223,4 +223,58 @@ mod tests {
         .unwrap();
         assert!(output.is_empty());
     }
+
+    #[test]
+    fn test_cmd_with_env_askpass_disables_credential_helper() {
+        let repo = temp_repo();
+        // When GIT_ASKPASS is provided, the command should include
+        // `-c credential.helper=` to disable system keychains.
+        // We verify by checking that the `-c` override appears as the
+        // last entry in credential.helper's config list (empty value
+        // resets the credential helper list in git's credential lookup).
+        let output = cmd_with_env(
+            repo.path(),
+            &["config", "--get-all", "credential.helper"],
+            &[("GIT_ASKPASS", "/bin/echo")],
+        )
+        .unwrap();
+        // The last line should be empty (the `-c credential.helper=` override).
+        // In git's credential resolution, an empty entry resets the list,
+        // effectively disabling all previously configured helpers.
+        let lines: Vec<&str> = output.lines().collect();
+        assert!(
+            !lines.is_empty(),
+            "credential.helper should have at least one entry"
+        );
+        assert_eq!(
+            lines.last().unwrap(),
+            &"",
+            "last credential.helper entry should be empty (disabling helpers), got: {lines:?}"
+        );
+    }
+
+    #[test]
+    fn test_cmd_with_env_no_askpass_preserves_credential_helper() {
+        let repo = temp_repo();
+        // Set a credential helper in the repo
+        config_set(repo.path(), "credential.helper", "store").unwrap();
+        // Without GIT_ASKPASS, the configured credential.helper should be preserved
+        let output = cmd_with_env(
+            repo.path(),
+            &["config", "credential.helper"],
+            &[("GIT_AUTHOR_NAME", "X")],
+        )
+        .unwrap();
+        assert_eq!(output.trim(), "store");
+    }
+
+    #[test]
+    fn test_cmd_with_env_askpass_env_is_passed_through() {
+        let repo = temp_repo();
+        // Verify GIT_ASKPASS env var doesn't interfere with normal git operations.
+        // We use `status` which always succeeds in a valid repo.
+        let askpass_script = "/usr/bin/true";
+        let output = cmd_with_env(repo.path(), &["status"], &[("GIT_ASKPASS", askpass_script)]);
+        assert!(output.is_ok());
+    }
 }
