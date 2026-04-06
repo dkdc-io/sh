@@ -274,11 +274,7 @@ mod tests {
         // Verify GIT_ASKPASS env var doesn't interfere with normal git operations.
         // We use `status` which always succeeds in a valid repo.
         let askpass_script = "/usr/bin/true";
-        let output = cmd_with_env(
-            repo.path(),
-            &["status"],
-            &[("GIT_ASKPASS", askpass_script)],
-        );
+        let output = cmd_with_env(repo.path(), &["status"], &[("GIT_ASKPASS", askpass_script)]);
         assert!(output.is_ok());
     }
 }
