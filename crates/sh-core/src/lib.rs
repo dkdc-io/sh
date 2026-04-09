@@ -6,6 +6,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::process::Command;
 
+pub mod editor;
 pub mod git;
 pub mod tmux;
 
